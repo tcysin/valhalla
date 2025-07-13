@@ -84,7 +84,7 @@ Valhalla's routing service uses dynamic, run-time costing to generate the route 
 
 #### Costing options
 
-Costing methods can have several options that can be adjusted to develop the route path, as well as for estimating time along the path. Specify costing model options in your request using the format of `costing_options.type`, such as ` costing_options.auto`.
+Costing methods can have several options that can be adjusted to develop the route path, as well as for estimating time along the path. Specify costing model options in your request using the format of `costing_options.type`, such as `costing_options.auto`.
 
 * Cost options are fixed costs in seconds that are added to both the path cost and the estimated time. Examples of costs are `gate_costs` and `toll_booth_costs`, where a fixed amount of time is added. Costs are not generally used to influence the route path; instead, use penalties to do this. Costs must be in the range of 0.0 seconds to 43200.0 seconds (12 hours), otherwise a default value will be assigned.
 * Penalty options are fixed costs in seconds that are only added to the path cost. Penalties can influence the route path determination but do not add to the estimated time along the path. For example, add a `toll_booth_penalty` to create route paths that tend to avoid toll booths. Penalties must be in the range of 0.0 seconds to 43200.0 seconds (12 hours), otherwise a default value will be assigned.
@@ -95,12 +95,14 @@ A special costing option is `shortest`, which, when `true`, will solely use dist
 Another special case is `disable_hierarchy_pruning` costing option. As the name indicates, `disable_hierarchy_pruning = true` will disable hierarchies in routing algorithms, which allows us to find the actual optimal route even in edge cases. For example, together with `shortest = true` they can find the actual shortest route. When `disable_hierarchy_pruning` is `true` and arc distances between source and target are not above the max limit, the actual optimal route will be calculated at the expense of performance. Note that if arc distances between locations exceed the max limit, `disable_hierarchy_pruning` is `true` will not be applied. This costing option is available for all motorized costing models, i.e `auto`, `motorcycle`, `motor_scooter`, `bus`, `truck` & `taxi`. For `bicycle` and `pedestrian` hierarchies are always disabled by default.
 
 Additionally to the main costing option, the `recostings` option can be used to calculate the travelling time of the found route based on different costing options. By e.g. adding
+
 ```json
 "recostings":[
     {"costing":"auto","fixed_speed":20,"name":"auto_20"},
     {"costing":"auto","fixed_speed":50,"name":"auto_50"}
 ]
 ```
+
 to the route request, the values `time_auto_20` and `time_auto_50` will be added to summaries to show how much time the route would cost with these given costing options. Passing a recosting which make the route impossible to follow (e.g. the main rout is by car over a motorway and recosting with pedestrian costing) leads to a `none` result of this recosting.
 
 ##### Automobile and bus costing options
@@ -142,6 +144,7 @@ These options are available for `auto`, `bus`, and `truck` costing methods.
 | `hierarchy_limits` (**beta**) | Pass custom hierarchy limits along with this request (read more about the tile hierarchy [here](../../tiles.md#hierarchieslevels)). Needs to be an object with mandatory keys `1` and `2`, each value is another object containing numerical values for `max_up_transitions` and `expand_within_distance`. The service may either clamp these values or disallow modifying hierarchy limits via the request parameters entirely. |
 
 ###### Other costing options
+
 The following options are available for `auto`, `bus`, `taxi`, and `truck` costing methods.
 
 | Vehicle Options | Description |
@@ -167,8 +170,8 @@ The following options are available for `truck` costing.
 | `low_class_penalty` | A penalty (in seconds) which is applied when going to residential or service roads. Default is 30 seconds. |
 | `use_truck_route` | This value is a range of values from 0 to 1, where 0 indicates a light preference for streets marked as truck routes, and 1 indicates that streets not marked as truck routes should be avoided. This information is derived from the `hgv=designated` tag. Note that even with values near 1, there is no guarantee the returned route will include streets marked as truck routes. The default value is 0. |
 
-
 ##### Bicycle costing options
+
 The default bicycle costing is tuned toward road bicycles with a slight preference for using [cycleways](https://wiki.openstreetmap.org/wiki/Key:cycleway) or roads with bicycle lanes. Bicycle routes use regular roads where needed or where no direct bicycle lane options exist, but avoid roads without bicycle access. The costing model recognizes several factors unique to bicycle travel and offers several options for tuning bicycle routes. Several factors unique to travel by bicycle influence the resulting route.
 
 * The types of roads suitable for bicycling depend on the type of bicycle. Road bicycles (skinny or narrow tires) generally are suited to paved roads or perhaps very short sections of compacted gravel. They are not designed for riding on coarse gravel or most paths and tracks through wooded areas or farmland. Mountain bikes, on the other hand, are able to traverse a wider set of surfaces.
@@ -194,6 +197,7 @@ These additional options are available for bicycle costing methods.
 | `shortest` | Changes the metric to quasi-shortest, i.e. purely distance-based costing. Note, this will disable all other costings & penalties. Also note, `shortest` will not disable hierarchy pruning, leading to potentially sub-optimal routes for some costing models. The default is `false`. |
 
 ##### Motor_scooter costing options
+
 Standard costing for travel by motor scooter or moped.  By default, motor_scooter costing will avoid higher class roads unless the country overrides allows motor scooters on these roads.  Motor scooter routes follow regular roads when needed, but avoid roads without motor_scooter, moped, or mofa access. The costing model recognizes factors unique to motor_scooter travel and offers options for tuning motor_scooter routes. Factors unique to travel by motor_scooter influence the resulting route.
 
 All of the options described above for autos also apply to motor_scooter costing methods.  These additional options are available for motor_scooter costing methods.
@@ -207,6 +211,7 @@ All of the options described above for autos also apply to motor_scooter costing
 | `disable_hierarchy_pruning` | Disable hierarchies to calculate the actual optimal route. The default is `false`. **Note:** This could be quite a performance drainer so there is a upper limit of distance. If the upper limit is exceeded, this option will always be `false`. |
 
 ##### Motorcycle costing options -> **BETA**
+
 Standard costing for travel by motorcycle.  By default, motorcycle costing will default to higher class roads.  The costing model recognizes factors unique to motorcycle travel and offers options for tuning motorcycle routes.
 
 All of the options described above for autos also apply to motorcycle costing methods.
@@ -240,7 +245,7 @@ These options are available for pedestrian costing methods.
 | `service_penalty` | A penalty applied for transition to generic service road. The default penalty is 0. |
 | `service_factor` | A factor that modifies (multiplies) the cost when generic service roads are encountered. The default `service_factor` is 1. |
 | `destination_only_penalty` | A penalty applied when entering an road which is only allowed to enter if necessary to reach the [destination](https://wiki.openstreetmap.org/wiki/Tag:vehicle%3Ddestination) |
-| `max_hiking_difficulty` | This value indicates the maximum difficulty of hiking trails that is allowed. Values between 0 and 6 are allowed. The values correspond to *sac_scale* values within OpenStreetMap, see reference [here](https://wiki.openstreetmap.org/wiki/Key:sac_scale). The default value is 1 which means that well cleared trails that are mostly flat or slightly sloped are allowed. Higher difficulty trails can be allowed by specifying a higher value for max_hiking_difficulty.
+| `max_hiking_difficulty` | This value indicates the maximum difficulty of hiking trails that is allowed. Values between 0 and 6 are allowed. The values correspond to _sac_scale_ values within OpenStreetMap, see reference [here](https://wiki.openstreetmap.org/wiki/Key:sac_scale). The default value is 1 which means that well cleared trails that are mostly flat or slightly sloped are allowed. Higher difficulty trails can be allowed by specifying a higher value for max_hiking_difficulty.
 |`bss_rent_cost`| This value is useful when `bikeshare` is chosen as travel mode. It is meant to give the time will be used to rent a bike from a bike share station. This value will be displayed in the final directions and used to calculate the whole duration. The default value is 120 seconds.|
 |`bss_rent_penalty`| This value is useful when `bikeshare` is chosen as travel mode. It is meant to describe the potential effort to rent a bike from a bike share station. This value won't be displayed and used only inside of the algorithm.|
 | `shortest` | Changes the metric to quasi-shortest, i.e. purely distance-based costing. Note, this will disable all other costings & penalties. Also note, `shortest` will not disable hierarchy pruning, leading to potentially sub-optimal routes for some costing models. The default is `false`. |
@@ -382,7 +387,7 @@ Basic trip information includes:
 | Trip item | Description |
 | :---- | :----------- |
 | `status` | Status code. |
-| `status_message ` | Status message. |
+| `status_message` | Status message. |
 | `units` | The specified units of length are returned, either kilometers or miles. |
 | `language` | The language of the narration instructions. If the user specified a language in the directions options and the specified language was supported - this returned value will be equal to the specified value. Otherwise, this value will be the default (en-US) language. |
 | `locations` | Location information is returned in the same form as it is entered with additional fields to indicate the side of the street. |
@@ -405,7 +410,7 @@ The summary JSON object includes:
 
 ### Trip legs and maneuvers
 
-A `trip` contains one or more `legs`. For *n* number of `break` locations, there are *n-1* legs. `Through` locations do not create separate legs.
+A `trip` contains one or more `legs`. For _n_ number of `break` locations, there are _n-1_ legs. `Through` locations do not create separate legs.
 
 Each leg of the trip includes a summary, which is comprised of the same information as a trip summary but applied to the single leg of the trip. It also includes a `shape`, which is an [encoded polyline](https://developers.google.com/maps/documentation/utilities/polylinealgorithm) of the route path (with 6 digits decimal precision), and a list of `maneuvers` as a JSON array. For more about decoding route shapes, see these [code examples](../../decoding.md).
 
@@ -522,7 +527,7 @@ A maneuver `transit_info` includes:
 | `description` | The description of the transit route. For example "Trains operate from Ditmars Boulevard, Queens, to Stillwell Avenue, Brooklyn, at all times. N trains in Manhattan operate along Broadway and across the Manhattan Bridge to and from Brooklyn. Trains in Brooklyn operate along 4th Avenue, then through Borough Park to Gravesend. Trains typically operate local in Queens, and either express or local in Manhattan and Brooklyn, depending on the time. Late night trains operate via Whitehall Street, Manhattan. Late night service is local". |
 | `operator_onestop_id` | Global operator/agency identifier. |
 | `operator_name` | Operator/agency name. For example, "BART", "King County Marine Division", and so on.  Short name is used over long name. |
-| `operator_url` | Operator/agency URL. For example, "https://web.mta.info/". |
+| `operator_url` | Operator/agency URL. For example, "<https://web.mta.info/>". |
 | `transit_stops` | A list of the stops/stations associated with a specific transit route. See below for details. |
 
 A `transit_stop` includes:
@@ -590,7 +595,7 @@ The following is a table of HTTP status error code conditions that may occur for
 
 | Status Code | Status | Description |
 | :--------- | :---------- | :---------- |
-| 200 | *your_trip_json* | A happy bit of json describing your `trip` result |
+| 200 | _your_trip_json_ | A happy bit of json describing your `trip` result |
 | 400 | Failed to parse json request | You need a valid json request |
 | 400 | Failed to parse location | You need a valid location object in your json request |
 | 400 | Failed to parse correlated location | There was a problem with the location once correlated to the route network |
